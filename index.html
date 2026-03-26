@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ResumeIQ — Career Match Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #080b10;
+  --bg2: #0d1117;
+  --bg3: #111820;
+  --bg4: #161e28;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #00e5ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --text: #e8edf5;
+  --text2: #8b97a8;
+  --text3: #4a5568;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --glow: 0 0 40px rgba(0, 229, 255, 0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none; z-index: 0;
+}
+.orb { position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; }
+.orb1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%); top: -200px; right: -100px; }
+.orb2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(0,229,255,0.07), transparent 70%); bottom: -100px; left: -100px; }
+.wrapper { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8, 11, 16, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+.nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.logo {
+  font-family: var(--font-head); font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.logo span { -webkit-text-fill-color: var(--text2); font-weight: 400; }
+.nav-badge {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--accent); border: 1px solid rgba(0,229,255,0.3);
+  padding: 3px 10px; border-radius: 20px; background: rgba(0,229,255,0.05);
+}
+.hero { padding: 72px 0 48px; text-align: center; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 12px; color: var(--accent);
+  border: 1px solid rgba(0,229,255,0.2); padding: 5px 14px;
+  border-radius: 20px; background: rgba(0,229,255,0.05);
+  margin-bottom: 24px; letter-spacing: 0.5px;
+}
+.hero-tag::before { content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+h1 {
+  font-family: var(--font-head);
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 800; line-height: 1.05;
+  letter-spacing: -2px; margin-bottom: 20px;
+}
+h1 em { font-style: normal; background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-sub { color: var(--text2); font-size: 17px; max-width: 540px; margin: 0 auto 40px; line-height: 1.7; }
+.steps { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 48px; }
+.step { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text3); font-family: var(--font-mono); cursor: pointer; transition: color .2s; }
+.step.active { color: var(--accent); }
+.step.done { color: var(--accent3); }
+.step-num { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; transition: background .2s, border .2s; }
+.step.active .step-num { background: rgba(0,229,255,0.15); }
+.step.done .step-num { background: rgba(16,185,129,0.15); }
+.step-label { white-space: nowrap; }
+.step-sep { width: 40px; height: 1px; background: var(--border2); margin: 0 8px; flex-shrink: 0; }
+.input-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+@media(max-width:768px){ .input-panel { grid-template-columns: 1fr; } }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: border-color .3s, box-shadow .3s; }
+.card:hover { border-color: var(--border2); box-shadow: var(--glow); }
+.card:focus-within { border-color: rgba(0,229,255,0.25); box-shadow: 0 0 30px rgba(0,229,255,0.06); }
+.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.card-icon.blue { background: rgba(0,229,255,0.1); }
+.card-icon.purple { background: rgba(124,58,237,0.15); }
+.card-title { font-family: var(--font-head); font-size: 15px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.upload-zone {
+  border: 1.5px dashed var(--border2); border-radius: var(--radius-sm);
+  padding: 24px 16px; text-align: center; cursor: pointer; transition: all .25s;
+  background: rgba(255,255,255,0.01); margin-bottom: 14px; position: relative;
+}
+.upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: rgba(0,229,255,0.04); }
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-icon { font-size: 28px; margin-bottom: 8px; }
+.upload-text { font-size: 13px; color: var(--text2); }
+.upload-text strong { color: var(--accent); }
+.upload-filename { font-family: var(--font-mono); font-size: 12px; color: var(--accent3); margin-top: 6px; display: none; }
+.divider-or { text-align: center; font-size: 11px; color: var(--text3); font-family: var(--font-mono); margin: 12px 0; display: flex; align-items: center; gap: 10px; }
+.divider-or::before, .divider-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+textarea {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: var(--font-body); font-size: 13.5px; line-height: 1.7;
+  padding: 14px; resize: vertical; outline: none; min-height: 160px;
+  transition: border-color .2s;
+}
+textarea::placeholder { color: var(--text3); }
+textarea:focus { border-color: rgba(0,229,255,0.3); }
+.btn-row { display: flex; justify-content: center; margin-bottom: 56px; }
+.btn-analyze {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent2), #4f46e5);
+  border: none; color: white;
+  font-family: var(--font-head); font-size: 16px; font-weight: 700;
+  padding: 16px 48px; border-radius: 50px; cursor: pointer;
+  letter-spacing: 0.3px; transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 8px 32px rgba(124,58,237,0.35);
+}
+.btn-analyze:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(124,58,237,0.5); }
+.btn-analyze:active { transform: translateY(0); }
+.btn-analyze::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,229,255,0.2), transparent); opacity: 0; transition: opacity .2s; }
+.btn-analyze:hover::after { opacity: 1; }
+.btn-analyze.loading { pointer-events: none; opacity: .7; }
+.spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#results { display: none; animation: fadeUp .5s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.score-hero { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; display: grid; grid-template-columns: auto 1fr; gap: 48px; align-items: center; margin-bottom: 20px; }
+@media(max-width:700px){ .score-hero { grid-template-columns: 1fr; text-align: center; } }
+.score-ring-wrap { position: relative; }
+.score-ring { width: 160px; height: 160px; --r: 68px; --c: var(--accent); }
+.score-ring circle { fill: none; stroke-width: 10; cx: 80; cy: 80; r: var(--r); }
+.score-ring .track { stroke: rgba(255,255,255,0.06); }
+.score-ring .fill { stroke: var(--c); stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); transform: rotate(-90deg); transform-origin: 50% 50%; }
+.score-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.score-num { font-family: var(--font-head); font-size: 36px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+.score-pct { font-size: 13px; color: var(--text2); font-family: var(--font-mono); }
+
+.verdict-tag { display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.verdict-title { font-family: var(--font-head); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+.verdict-detail { color: var(--text2); font-size: 15px; line-height: 1.7; margin-bottom: 20px; }
+.apply-badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 50px; font-family: var(--font-head); font-size: 14px; font-weight: 700; }
+.apply-badge.yes { background: rgba(16,185,129,0.15); color: var(--accent3); border: 1px solid rgba(16,185,129,0.3); }
+.apply-badge.no { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
+.breakdown-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+@media(max-width:900px){ .breakdown-grid { grid-template-columns: repeat(3,1fr); } }
+@media(max-width:500px){ .breakdown-grid { grid-template-columns: repeat(2,1fr); } }
+.score-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 18px 14px; text-align: center; transition: border-color .2s; }
+.score-card:hover { border-color: var(--border2); }
+.score-card-val { font-family: var(--font-head); font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+.score-card-label { font-size: 11px; color: var(--text3); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.5px; }
+.score-bar { height: 3px; border-radius: 2px; background: var(--border); margin-top: 10px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
+.content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+@media(max-width:800px){ .content-grid { grid-template-columns: 1fr; } }
+.section-label { font-family: var(--font-mono); font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { font-family: var(--font-mono); font-size: 12px; padding: 5px 12px; border-radius: 20px; white-space: nowrap; border: 1px solid transparent; }
+.tag.matched { background: rgba(16,185,129,0.1); color: var(--accent3); border-color: rgba(16,185,129,0.2); }
+.tag.missing { background: rgba(239,68,68,0.08); color: #f87171; border-color: rgba(239,68,68,0.2); }
+.tag.tool { background: rgba(245,158,11,0.08); color: var(--warn); border-color: rgba(245,158,11,0.2); }
+.gap-list { display: flex; flex-direction: column; gap: 12px; }
+.gap-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; transition: border-color .2s; }
+.gap-card:hover { border-color: var(--border2); }
+.gap-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.gap-name { font-family: var(--font-head); font-size: 14px; font-weight: 700; }
+.gap-importance { font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.gap-importance.critical { background: rgba(239,68,68,0.15); color: var(--danger); }
+.gap-importance.important { background: rgba(245,158,11,0.12); color: var(--warn); }
+.gap-importance.nice-to-have { background: rgba(99,102,241,0.12); color: #818cf8; }
+.gap-category { font-size: 11px; color: var(--text3); margin-bottom: 10px; font-family: var(--font-mono); }
+.gap-courses { display: flex; flex-wrap: wrap; gap: 6px; }
+.course-link { font-size: 11px; font-family: var(--font-mono); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border2); color: var(--text2); text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 5px; background: var(--bg4); }
+.course-link:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.05); }
+.course-platform { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; opacity: .6; }
+.rec-list { display: flex; flex-direction: column; gap: 10px; }
+.rec-item { display: flex; gap: 12px; align-items: flex-start; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
+.rec-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.rec-text { font-size: 14px; color: var(--text2); line-height: 1.6; }
+.re-analyze { display: flex; justify-content: center; padding: 48px 0 0; }
+.btn-secondary { background: transparent; border: 1px solid var(--border2); color: var(--text2); font-family: var(--font-head); font-size: 14px; font-weight: 600; padding: 12px 32px; border-radius: 50px; cursor: pointer; transition: all .2s; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.05); }
+footer { text-align: center; padding: 40px 24px; font-size: 13px; color: var(--text3); border-top: 1px solid var(--border); margin-top: 60px; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: var(--font-mono); font-size: 13px; padding: 12px 24px; border-radius: 50px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 200; white-space: nowrap; max-width: 90vw; text-overflow: ellipsis; overflow: hidden; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { border-color: rgba(239,68,68,0.4); color: #f87171; background: rgba(239,68,68,0.08); }
+.demo-banner { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 20px; font-size: 13px; color: var(--warn); font-family: var(--font-mono); display: none; }
+.demo-banner.visible { display: block; }
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">Resume<span>IQ</span></div>
+    <div class="nav-badge">v2.0 — Fixed Engine</div>
+  </div>
+</nav>
+
+<div class="wrapper">
+  <section class="hero">
+    <div class="hero-tag">AI-Powered Career Match Engine</div>
+    <h1>Know your <em>exact fit</em><br/>before you apply</h1>
+    <p class="hero-sub">Paste your resume and a job description. Get a weighted match score, skill gaps, and course recommendations — instantly.</p>
+    <div class="steps">
+      <div class="step active" id="step1">
+        <div class="step-num">1</div>
+        <div class="step-label">Input</div>
+      </div>
+      <div class="step-sep"></div>
+      <div class="step" id="step2">
+        <div class="step-num">2</div>
+        <div class="step-label">Analyze</div>
+      </div>
+      <div class="step-sep"></div>
+      <div class="step" id="step3">
+        <div class="step-num">3</div>
+        <div class="step-label">Results</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="input-panel" id="inputPanel">
+    <!-- Resume -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">📄</div>
+        <div>
+          <div class="card-title">Your Resume</div>
+          <div class="card-sub">Upload PDF/DOCX or paste text</div>
+        </div>
+      </div>
+      <div class="upload-zone" id="resumeZone">
+        <input type="file" id="resumeFile" accept=".pdf,.docx,.txt" onchange="handleResumeFile(this)"/>
+        <div class="upload-icon">⬆️</div>
+        <div class="upload-text">Drag & drop or <strong>browse file</strong></div>
+        <div class="upload-text" style="font-size:11px;color:var(--text3);margin-top:4px">PDF, DOCX, TXT</div>
+        <div class="upload-filename" id="resumeFilename"></div>
+      </div>
+      <div class="divider-or">or paste text below</div>
+      <textarea id="resumeText" placeholder="Paste your resume content here…&#10;&#10;Include: skills, experience, education, certifications..." rows="8"></textarea>
+    </div>
+
+    <!-- JD -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon purple">💼</div>
+        <div>
+          <div class="card-title">Job Description</div>
+          <div class="card-sub">Paste the full JD for best results</div>
+        </div>
+      </div>
+      <textarea id="jdText" placeholder="Paste the job description here…&#10;&#10;Include: required skills, responsibilities, qualifications, tools..." rows="14" style="min-height:270px"></textarea>
+    </div>
+  </div>
+
+  <div class="btn-row" id="btnRow">
+    <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+      ✦ Analyze My Match
+    </button>
+  </div>
+
+  <!-- Results -->
+  <section id="results">
+    <div class="demo-banner" id="demoBanner">
+      ⚠ Running in demo mode — start the FastAPI backend for full AI-powered results
+    </div>
+
+    <div class="score-hero" id="scoreHero">
+      <div class="score-ring-wrap">
+        <svg class="score-ring" viewBox="0 0 160 160" id="scoreRingSvg">
+          <circle class="track" cx="80" cy="80" r="68"/>
+          <circle class="fill" id="ringFill" cx="80" cy="80" r="68"
+            stroke-dasharray="427" stroke-dashoffset="427"/>
+        </svg>
+        <div class="score-center">
+          <div class="score-num" id="scoreNum">0</div>
+          <div class="score-pct">/ 100</div>
+        </div>
+      </div>
+      <div class="verdict-block">
+        <div class="verdict-tag" id="verdictTag">—</div>
+        <div class="verdict-title" id="verdictTitle">Analyzing…</div>
+        <div class="verdict-detail" id="verdictDetail"></div>
+        <div class="apply-badge" id="applyBadge"></div>
+      </div>
+    </div>
+
+    <div class="breakdown-grid">
+      <div class="score-card">
+        <div class="score-card-val" id="sc-hard" style="color:var(--accent)">—</div>
+        <div class="score-card-label">Hard Skills</div>
+        <div class="score-bar"><div class="score-bar-fill" id="sb-hard" style="background:var(--accent);width:0%"></div></div>
+      </div>
+      <div class="score-card">
+        <div class="score-card-val" id="sc-soft" style="color:#818cf8">—</div>
+        <div class="score-card-label">Soft Skills</div>
+        <div class="score-bar"><div class="score-bar-fill" id="sb-soft" style="background:#818cf8;width:0%"></div></div>
+      </div>
+      <div class="score-card">
+        <div class="score-card-val" id="sc-tools" style="color:var(--warn)">—</div>
+        <div class="score-card-label">Tools</div>
+        <div class="score-bar"><div class="score-bar-fill" id="sb-tools" style="background:var(--warn);width:0%"></div></div>
+      </div>
+      <div class="score-card">
+        <div class="score-card-val" id="sc-qual" style="color:var(--accent3)">—</div>
+        <div class="score-card-label">Qualifications</div>
+        <div class="score-bar"><div class="score-bar-fill" id="sb-qual" style="background:var(--accent3);width:0%"></div></div>
+      </div>
+      <div class="score-card">
+        <div class="score-card-val" id="sc-exp" style="color:#f472b6">—</div>
+        <div class="score-card-label">Experience</div>
+        <div class="score-bar"><div class="score-bar-fill" id="sb-exp" style="background:#f472b6;width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="card">
+        <div class="section-label">✓ Skills You Have</div>
+        <div class="skill-tags" id="matchedSkills"></div>
+      </div>
+      <div class="card">
+        <div class="section-label">✗ Skills You're Missing</div>
+        <div class="skill-tags" id="missingSkillTags"></div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="card">
+        <div class="section-label">↗ Gap Analysis + Courses</div>
+        <div class="gap-list" id="gapList"></div>
+      </div>
+      <div class="card">
+        <div class="section-label">◈ Recommendations</div>
+        <div class="rec-list" id="recList"></div>
+      </div>
+    </div>
+
+    <div class="re-analyze">
+      <button class="btn-secondary" onclick="reset()">↺ Analyze Another Role</button>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <strong>ResumeIQ</strong> — Semantic Career Match Engine &nbsp;·&nbsp;
+  API powered by <strong>FastAPI</strong> &nbsp;·&nbsp;
+  Built for developers, by developers
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8000';
+const API_TIMEOUT_MS = 12000; // 12 seconds — then fall back to demo mode
+let resumeRawText = '';
+
+// ── Drag & Drop ───────────────────────────────────────────────────────────────
+const zone = document.getElementById('resumeZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+
+async function handleResumeFile(input) {
+  if (input.files[0]) handleFile(input.files[0]);
+}
+
+async function handleFile(file) {
+  const fn = document.getElementById('resumeFilename');
+  fn.textContent = '📎 ' + file.name;
+  fn.style.display = 'block';
+  toast('Parsing ' + file.name + '…');
+
+  const isText = file.name.toLowerCase().endsWith('.txt');
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+    const res = await fetch(`${API}/api/resume/parse`, { method: 'POST', body: fd, signal: controller.signal });
+    clearTimeout(timer);
+    const data = await res.json();
+    if (data.raw_text) {
+      resumeRawText = data.raw_text;
+      document.getElementById('resumeText').value = resumeRawText.substring(0, 2000);
+      const count = data.data?.skills?.hard_skills?.length || 0;
+      toast('✓ Resume parsed — ' + count + ' skills detected');
+    } else {
+      throw new Error('No text returned');
+    }
+  } catch (err) {
+    const msg = err.name === 'AbortError'
+      ? '⚠ Parse timed out. Paste your resume text manually.'
+      : isText
+        ? '⚠ Could not reach API — loaded text directly.'
+        : '⚠ Could not reach API. Paste your resume text below.';
+    toast(msg, true);
+
+    // Only try reading as text for .txt files (PDF/DOCX binary would be garbage)
+    if (isText) {
+      try {
+        const text = await file.text();
+        if (text) {
+          resumeRawText = text;
+          document.getElementById('resumeText').value = text.substring(0, 2000);
+        }
+      } catch (_) { /* ignore */ }
+    }
+  }
+}
+
+// ── Analyze ──────────────────────────────────────────────────────────────────
+async function analyze() {
+  const resumeText = resumeRawText || document.getElementById('resumeText').value.trim();
+  const jdText = document.getElementById('jdText').value.trim();
+
+  if (!resumeText) return toast('⚠ Please add your resume first.', true);
+  if (!jdText)     return toast('⚠ Please paste the job description.', true);
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="spinner"></span>Analyzing…';
+  setStep(2);
+
+  let usedDemo = false;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+    const res = await fetch(`${API}/api/match/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resume_text: resumeText, jd_text: jdText }),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (!json.success) throw new Error('API returned error');
+    renderResults(json.data, false);
+
+  } catch (err) {
+    usedDemo = true;
+    const reason = err.name === 'AbortError' ? 'timeout' : 'unreachable';
+    renderResults(getDemoData(resumeText, jdText), true);
+    toast(
+      reason === 'timeout'
+        ? '⚠ API timed out — showing demo analysis. Start the backend for full results.'
+        : '⚠ Demo mode — start the FastAPI backend for full AI results.',
+      true,
+    );
+  }
+
+  btn.classList.remove('loading');
+  btn.innerHTML = '✦ Analyze My Match';
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderResults(d, isDemo) {
+  setStep(3);
+  document.getElementById('inputPanel').style.display = 'none';
+  document.getElementById('btnRow').style.display = 'none';
+  document.getElementById('demoBanner').className = 'demo-banner' + (isDemo ? ' visible' : '');
+  const results = document.getElementById('results');
+  results.style.display = 'block';
+  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Ring
+  const circumference = 427;
+  const offset = circumference - (d.overall_score / 100) * circumference;
+  const fill = document.getElementById('ringFill');
+  const color = d.overall_score >= 80 ? 'var(--accent3)' : d.overall_score >= 60 ? 'var(--warn)' : 'var(--danger)';
+  fill.style.stroke = color;
+  setTimeout(() => { fill.style.strokeDashoffset = offset; }, 100);
+  animateNum('scoreNum', 0, d.overall_score, 1200);
+
+  const vtColors = {
+    'Strong Match': { bg: 'rgba(16,185,129,0.12)', color: 'var(--accent3)', border: 'rgba(16,185,129,0.3)' },
+    'Partial Match': { bg: 'rgba(245,158,11,0.12)', color: 'var(--warn)', border: 'rgba(245,158,11,0.3)' },
+    'Developing': { bg: 'rgba(99,102,241,0.12)', color: '#818cf8', border: 'rgba(99,102,241,0.3)' },
+    'Not Ready Yet': { bg: 'rgba(239,68,68,0.1)', color: 'var(--danger)', border: 'rgba(239,68,68,0.25)' },
+  };
+  const vc = vtColors[d.verdict] || vtColors['Developing'];
+  const vtag = document.getElementById('verdictTag');
+  vtag.textContent = d.verdict;
+  Object.assign(vtag.style, { background: vc.bg, color: vc.color, border: `1px solid ${vc.border}` });
+  document.getElementById('verdictTitle').textContent = d.verdict;
+  document.getElementById('verdictDetail').textContent = d.verdict_detail;
+  const badge = document.getElementById('applyBadge');
+  badge.textContent = d.can_apply ? '✓ Apply for this job' : '✗ Upskill before applying';
+  badge.className = 'apply-badge ' + (d.can_apply ? 'yes' : 'no');
+
+  setScoreCard('hard',  d.hard_skill_score);
+  setScoreCard('soft',  d.soft_skill_score);
+  setScoreCard('tools', d.tools_score);
+  setScoreCard('qual',  d.qualification_score);
+  setScoreCard('exp',   d.experience_score);
+
+  const mt = document.getElementById('matchedSkills');
+  mt.innerHTML = d.matched_skills.length
+    ? d.matched_skills.map(s => `<span class="tag matched">✓ ${s}</span>`).join('')
+    : '<span style="color:var(--text3);font-size:13px">No matching skills detected</span>';
+
+  const ms = document.getElementById('missingSkillTags');
+  ms.innerHTML = d.missing_skills.length
+    ? d.missing_skills.map(g => `<span class="tag ${g.category === 'Tool' ? 'tool' : 'missing'}">✗ ${g.skill}</span>`).join('')
+    : '<span style="color:var(--accent3);font-size:13px">✓ No critical gaps found!</span>';
+
+  const gl = document.getElementById('gapList');
+  if (!d.missing_skills.length) {
+    gl.innerHTML = '<div style="color:var(--accent3);font-size:14px;padding:12px 0">🎉 You meet all skill requirements!</div>';
+  } else {
+    gl.innerHTML = d.missing_skills.map(g => `
+      <div class="gap-card">
+        <div class="gap-top">
+          <div class="gap-name">${g.skill}</div>
+          <div class="gap-importance ${g.importance.replace(/\s+/g,'-')}">${g.importance}</div>
+        </div>
+        <div class="gap-category">${g.category}</div>
+        <div class="gap-courses">
+          ${(g.courses||[]).map(c => `
+            <a href="${c.url}" target="_blank" class="course-link">
+              <span>${c.title.length > 28 ? c.title.substring(0,25)+'…' : c.title}</span>
+              <span class="course-platform">${c.platform}</span>
+            </a>`).join('')}
+        </div>
+      </div>`).join('');
+  }
+
+  const rl = document.getElementById('recList');
+  const icons = ['🎯','📈','📚','🛠','🚀','💡','🔑'];
+  rl.innerHTML = d.recommendations.map((r, i) => `
+    <div class="rec-item">
+      <div class="rec-icon">${icons[i % icons.length]}</div>
+      <div class="rec-text">${r}</div>
+    </div>`).join('');
+}
+
+function setScoreCard(id, val) {
+  document.getElementById(`sc-${id}`).textContent = Math.round(val) + '%';
+  setTimeout(() => { document.getElementById(`sb-${id}`).style.width = val + '%'; }, 200);
+}
+
+function animateNum(id, from, to, dur) {
+  const el = document.getElementById(id);
+  const start = performance.now();
+  const update = now => {
+    const t = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(from + (to - from) * ease);
+    if (t < 1) requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
+}
+
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('step' + i).className = 'step ' + (i < n ? 'done' : i === n ? 'active' : '');
+  }
+}
+
+function reset() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('inputPanel').style.display = 'grid';
+  document.getElementById('btnRow').style.display = 'flex';
+  document.getElementById('resumeText').value = '';
+  document.getElementById('jdText').value = '';
+  document.getElementById('resumeFilename').style.display = 'none';
+  resumeRawText = '';
+  setStep(1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = 'toast', 4000);
+}
+
+// ── Demo Mode ─────────────────────────────────────────────────────────────────
+// Mirrors the alias normalization from matcher.py so demo results are accurate.
+
+const ALIAS_RULES = [
+  // Multi-word → canonical (check these first)
+  [/\bnatural language processing\b/g, 'nlp'],
+  [/\bamazon web services\b/g, 'aws'],
+  [/\bgoogle cloud platform\b/g, 'gcp'],
+  [/\bmicrosoft azure\b/g, 'azure'],
+  [/\bgoogle cloud\b/g, 'gcp'],
+  [/\bcontinuous integration\b/g, 'ci/cd'],
+  [/\bvisual studio code\b/g, 'vscode'],
+  [/\bmicrosoft excel\b/g, 'excel'],
+  [/\bms excel\b/g, 'excel'],
+  [/\bhugging face\b/g, 'huggingface'],
+  [/\bscikit[\-\s]learn\b/g, 'scikit-learn'],
+  [/\belastic search\b/g, 'elasticsearch'],
+  [/\bc sharp\b/g, 'c#'],
+  [/\bc plus plus\b/g, 'c++'],
+  [/\bvs code\b/g, 'vscode'],
+  [/\bspringboot\b/g, 'spring boot'],
+  [/\brestful\s+api[s]?\b/g, 'rest api'],
+  [/\brest\s+api[s]?\b/g, 'rest api'],
+  [/\brestful\b/g, 'rest api'],
+  // Single-word aliases
+  [/\bgolang\b/g, 'go'],
+  [/\bnodejs\b/g, 'node.js'],
+  [/\bnode\.js\b/g, 'node.js'],
+  [/\bnode\s+js\b/g, 'node.js'],
+  [/\breactjs\b/g, 'react'],
+  [/\breact\.js\b/g, 'react'],
+  [/\bvuejs\b/g, 'vue'],
+  [/\bvue\.js\b/g, 'vue'],
+  [/\bnextjs\b/g, 'next.js'],
+  [/\bnuxtjs\b/g, 'nuxt'],
+  [/\bsveltejs\b/g, 'svelte'],
+  [/\bexpressjs\b/g, 'express'],
+  [/\bexpress\.js\b/g, 'express'],
+  [/\bangularjs\b/g, 'angular'],
+  [/\bsklearn\b/g, 'scikit-learn'],
+  [/\bk8s\b/g, 'kubernetes'],
+  [/\bpostgres\b/g, 'postgresql'],
+  [/\bpsql\b/g, 'postgresql'],
+  [/\bmongo\b/g, 'mongodb'],
+  [/\bcsharp\b/g, 'c#'],
+  [/\bcplusplus\b/g, 'c++'],
+  [/\bcicd\b/g, 'ci/cd'],
+  [/\bci[\s\-]cd\b/g, 'ci/cd'],
+];
+
+function normalizeText(text) {
+  let t = text.toLowerCase();
+  for (const [pat, repl] of ALIAS_RULES) t = t.replace(pat, repl);
+  return t;
+}
+
+// Skill includes check that handles special chars (., +, #, /)
+function textHasSkill(normalizedText, skill) {
+  const s = skill.toLowerCase();
+  const esc = s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pat = new RegExp('(?<![a-z0-9])' + esc + '(?![a-z0-9])', 'i');
+  return pat.test(normalizedText);
+}
+
+const DEMO_SKILLS = [
+  // Hard skills
+  'python','javascript','typescript','java','go','rust','c++','c#','sql','r',
+  'react','angular','vue','next.js','node.js','express','django','fastapi','flask','spring boot',
+  'machine learning','deep learning','nlp','computer vision','data science','data analysis',
+  'tensorflow','pytorch','scikit-learn','pandas','numpy','huggingface','langchain',
+  'aws','gcp','azure','docker','kubernetes','terraform','ci/cd','devops','linux','bash','git',
+  'mongodb','postgresql','mysql','redis','elasticsearch','kafka','spark',
+  'rest api','microservices','graphql','system design',
+  'tableau','power bi','excel',
+  'figma','ux design',
+  // Soft skills
+  'communication','teamwork','leadership','problem solving','agile','scrum',
+  'project management','critical thinking','collaboration','adaptability',
+  // Tools
+  'github','gitlab','jira','confluence','slack','vscode','intellij','postman',
+  'selenium','jest','pytest','grafana','datadog','nginx',
+];
+
+const COURSE_DB = {
+  'python':          [{title:'Python Bootcamp',url:'https://www.udemy.com/course/complete-python-bootcamp/',platform:'Udemy'},{title:'Python for Data Science',url:'https://www.coursera.org/learn/python-for-applied-data-science-ai',platform:'Coursera'}],
+  'javascript':      [{title:'The Complete JS Course',url:'https://www.udemy.com/course/the-complete-javascript-course/',platform:'Udemy'},{title:'JavaScript Algorithms',url:'https://www.udemy.com/course/js-algorithms-and-data-structures-masterclass/',platform:'Udemy'}],
+  'react':           [{title:'React - The Complete Guide',url:'https://www.udemy.com/course/react-the-complete-guide-incl-redux/',platform:'Udemy'},{title:'React Basics',url:'https://www.coursera.org/learn/react-basics',platform:'Coursera'}],
+  'node.js':         [{title:'The Complete Node.js Dev Course',url:'https://www.udemy.com/course/the-complete-nodejs-developer-course-2/',platform:'Udemy'}],
+  'typescript':      [{title:'Understanding TypeScript',url:'https://www.udemy.com/course/understanding-typescript/',platform:'Udemy'}],
+  'machine learning':[{title:'ML Specialization',url:'https://www.coursera.org/specializations/machine-learning-introduction',platform:'Coursera'},{title:'ML A-Z',url:'https://www.udemy.com/course/machinelearning/',platform:'Udemy'}],
+  'deep learning':   [{title:'Deep Learning Specialization',url:'https://www.coursera.org/specializations/deep-learning',platform:'Coursera'}],
+  'aws':             [{title:'AWS Solutions Architect',url:'https://www.udemy.com/course/aws-certified-solutions-architect-associate-saa-c03/',platform:'Udemy'},{title:'AWS Cloud Practitioner',url:'https://www.coursera.org/learn/aws-cloud-practitioner-essentials',platform:'Coursera'}],
+  'docker':          [{title:'Docker & Kubernetes Guide',url:'https://www.udemy.com/course/docker-and-kubernetes-the-complete-guide/',platform:'Udemy'}],
+  'kubernetes':      [{title:'Kubernetes for Beginners',url:'https://www.udemy.com/course/learn-kubernetes/',platform:'Udemy'}],
+  'sql':             [{title:'The Complete SQL Bootcamp',url:'https://www.udemy.com/course/the-complete-sql-bootcamp/',platform:'Udemy'}],
+  'postgresql':      [{title:'SQL & PostgreSQL for Beginners',url:'https://www.udemy.com/course/sql-and-postgresql/',platform:'Udemy'}],
+  'mongodb':         [{title:'MongoDB Complete Dev Guide',url:'https://www.udemy.com/course/mongodb-the-complete-developers-guide/',platform:'Udemy'}],
+  'git':             [{title:'Git & Github Bootcamp',url:'https://www.udemy.com/course/git-and-github-bootcamp/',platform:'Udemy'}],
+  'tensorflow':      [{title:'TensorFlow Developer Certificate',url:'https://www.coursera.org/professional-certificates/tensorflow-in-practice',platform:'Coursera'}],
+  'ci/cd':           [{title:'Jenkins, From Zero to Hero',url:'https://www.udemy.com/course/jenkins-from-zero-to-hero/',platform:'Udemy'}],
+  'terraform':       [{title:'HashiCorp Certified Terraform',url:'https://www.udemy.com/course/terraform-beginner-to-advanced/',platform:'Udemy'}],
+  'django':          [{title:'Python Django - Practical Guide',url:'https://www.udemy.com/course/python-django-the-practical-guide/',platform:'Udemy'}],
+  'fastapi':         [{title:'FastAPI - The Complete Course',url:'https://www.udemy.com/course/fastapi-the-complete-course/',platform:'Udemy'}],
+};
+
+function getCoursesForSkill(skill) {
+  const s = skill.toLowerCase();
+  for (const [key, courses] of Object.entries(COURSE_DB)) {
+    if (key.includes(s) || s.includes(key)) return courses;
+  }
+  return [
+    { title: `Learn ${skill}`, platform: 'YouTube', url: `https://www.youtube.com/results?search_query=learn+${encodeURIComponent(skill)}` },
+    { title: `${skill} Full Course`, platform: 'Coursera', url: `https://www.coursera.org/search?query=${encodeURIComponent(skill)}` },
+  ];
+}
+
+function getDemoData(resumeText, jdText) {
+  const resumeNorm = normalizeText(resumeText);
+  const jdNorm     = normalizeText(jdText);
+
+  const matched = DEMO_SKILLS.filter(s => textHasSkill(resumeNorm, s));
+  const jdSkills = DEMO_SKILLS.filter(s => textHasSkill(jdNorm, s));
+  const missing  = jdSkills.filter(s => !textHasSkill(resumeNorm, s)).slice(0, 7);
+
+  const matchRatio = jdSkills.length > 0 ? matched.filter(s => jdSkills.includes(s)).length / jdSkills.length : 0.5;
+  const score      = Math.round(Math.min(95, 35 + matchRatio * 60));
+
+  // Experience extraction
+  const expMatch = resumeText.match(/(\d+)\+?\s*(?:years?|yrs?)/i);
+  const resumeYrs = expMatch ? parseInt(expMatch[1]) : 0;
+  const jdExpMatch = jdText.match(/(\d+)\+?\s*(?:years?|yrs?)/i);
+  const jdYrs = jdExpMatch ? parseInt(jdExpMatch[1]) : 0;
+  const expScore = jdYrs === 0 ? 100 : resumeYrs === 0 ? 50 : Math.min(100, Math.round(resumeYrs / jdYrs * 100));
+
+  return {
+    overall_score:       score,
+    hard_skill_score:    Math.min(100, score + 5),
+    soft_skill_score:    Math.max(0,   score - 10),
+    tools_score:         Math.max(0,   score - 5),
+    qualification_score: Math.min(100, score + 3),
+    experience_score:    expScore,
+    can_apply:           score >= 80,
+    verdict:             score >= 80 ? 'Strong Match' : score >= 60 ? 'Partial Match' : score >= 40 ? 'Developing' : 'Not Ready Yet',
+    verdict_detail:      score >= 80
+      ? 'Your profile aligns well. Apply with confidence!'
+      : score >= 60
+        ? 'You meet several requirements. Close the gaps below and you\'re a top candidate.'
+        : 'Significant skill gaps remain. Use the course recommendations to get there.',
+    matched_skills: matched.filter(s => jdSkills.includes(s)).slice(0, 12),
+    missing_skills: missing.map((s, i) => ({
+      skill:      s,
+      category:   i < 3 ? 'Hard Skill' : i < 5 ? 'Tool' : 'Soft Skill',
+      importance: i === 0 ? 'critical' : i < 3 ? 'important' : 'nice-to-have',
+      courses:    getCoursesForSkill(s),
+    })),
+    recommendations: [
+      missing.length > 0
+        ? `Focus on acquiring: ${missing.slice(0, 3).join(', ')}.`
+        : 'Your skill set covers all key requirements!',
+      jdYrs > 0 && resumeYrs < jdYrs
+        ? `Build more hands-on experience — role requires ~${jdYrs} years.`
+        : 'Your experience level appears well-suited for this role.',
+      score >= 80
+        ? 'Tailor your resume with keywords from the JD before applying.'
+        : 'Upskill in 2–3 key areas to significantly boost your match score.',
+      'Build a portfolio project that demonstrates the tools listed in the JD.',
+    ].filter(Boolean),
+  };
+}
+</script>
+</body>
+</html>
