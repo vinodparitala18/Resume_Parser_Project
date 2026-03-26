@@ -379,6 +379,7 @@ footer { text-align: center; padding: 40px 24px; font-size: 13px; color: var(--t
 <div class="toast" id="toast"></div>
 
 <script>
+// Keep backend calls on the dedicated FastAPI port (8000) so GitHub Live / static file origin doesn’t break CORS/host mapping:
 const API = 'http://localhost:8000';
 const API_TIMEOUT_MS = 12000; // 12 seconds — then fall back to demo mode
 let resumeRawText = '';
